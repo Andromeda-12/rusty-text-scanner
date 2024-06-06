@@ -1,68 +1,129 @@
-use crate::consts::colors;
+use crate::{consts::colors, utils::split_word_by_substring_inclusive};
 use std::io::{self, Write};
-use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+use termcolor::{Buffer, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
-pub fn print_highlighted(
-    before_lines: Vec<String>,
+pub fn print_matched_line(
     highlighted_line: String,
+    before_lines: Vec<String>,
     after_lines: Vec<String>,
-    highlighted_slice: &str,
-) -> io::Result<()> {
+    matched_word: &str,
+    case_sensitive: bool,
+    consider_substrings: bool,
+) {
     let mut stdout = StandardStream::stdout(ColorChoice::Always);
 
     for line in before_lines {
-        print_additional_lines(&mut stdout, &line)?;
+        print_additional_lines(&mut stdout, &line).unwrap();
     }
 
-    print_highlighted_slices(&mut stdout, &highlighted_line, highlighted_slice)?;
+    print_highlighted_line(
+        &mut stdout,
+        &highlighted_line,
+        matched_word,
+        case_sensitive,
+        consider_substrings,
+    )
+    .unwrap();
 
     for line in after_lines {
-        print_additional_lines(&mut stdout, &line)?;
+        print_additional_lines(&mut stdout, &line).unwrap();
     }
-
-    Ok(())
 }
 
-pub fn print_highlighted_slices(
-    stdout: &mut StandardStream,
+pub fn get_highlighted_line(
     line: &str,
-    highlighted_slice: &str,
-) -> io::Result<()> {
+    search_word: &str,
+    case_sensitive: bool,
+    consider_substrings: bool,
+) -> io::Result<String> {
+    let mut buffer = Buffer::ansi();
     let mut color_spec = ColorSpec::new();
 
-    let lowercase_highlighted_slice = highlighted_slice.to_lowercase();
+    let words: Vec<&str> = line.split(" ").collect();
 
-    let line_parts: Vec<&str> = line.split(&lowercase_highlighted_slice).collect();
+    for word in words {
+        color_spec.set_fg(Some(colors::HIGHLIGHTED_LINE_FG_COLOR));
 
-    println!("test {:?} {}", line_parts, line_parts.len());
+        if word == search_word {
+            color_spec.set_bg(Some(colors::HIGHLIGHTED_WORD_BG_COLOR));
+        }
 
-    for (index, line_part) in line_parts.iter().enumerate() {
-        if index == line_parts.len() - 1 {
-            write!(stdout, "{line_part}")?;
+        if case_sensitive && word.to_lowercase() == search_word.to_lowercase() {
+            color_spec.set_bg(Some(colors::HIGHLIGHTED_WORD_BG_COLOR));
+        }
+
+        if consider_substrings && word.contains(search_word)
+            || case_sensitive
+                && consider_substrings
+                && word.to_lowercase().contains(&search_word.to_lowercase())
+        {
+            let word_parts = split_word_by_substring_inclusive(word, search_word);
+
+            for word_part in word_parts {
+                color_spec.set_fg(Some(colors::HIGHLIGHTED_LINE_FG_COLOR));
+
+                if word_part == search_word
+                    || case_sensitive && word_part.to_lowercase() == search_word.to_lowercase()
+                {
+                    color_spec.set_bg(Some(colors::HIGHLIGHTED_WORD_BG_COLOR));
+                }
+
+                buffer.set_color(&color_spec).unwrap();
+                buffer.write(word_part.as_bytes()).unwrap();
+                buffer.reset().unwrap();
+                color_spec.clear();
+            }
+
+            buffer.write(b" ").unwrap();
             continue;
         }
 
-        write!(stdout, "{line_part}")?;
-        color_spec.set_bg(Some(colors::YELLOW));
-        stdout.set_color(&color_spec)?;
-        write!(stdout, "{highlighted_slice}")?;
-        stdout.reset()?;
+        buffer.set_color(&color_spec)?;
+        buffer.write(word.as_bytes())?;
+        buffer.reset()?;
+        buffer.write(b" ")?;
+        color_spec.clear();
     }
 
-    write!(stdout, "{}", '\n')?;
+    let result = String::from_utf8(buffer.into_inner()).unwrap();
 
+    Ok(result)
+}
+
+// pub fn get_colored_slice(slice: &str, color: Color) -> io::Result<String> {
+//     let mut buffer = Buffer::ansi();
+//     let mut color_spec = ColorSpec::new();
+//     color_spec.set_bg(Some(color));
+//     buffer.set_color(&color_spec)?;
+//     buffer.write(slice.as_bytes())?;
+//     buffer.reset()?;
+//     let result = String::from_utf8(buffer.into_inner()).unwrap();
+//     Ok(result)
+// }
+
+// pub fn print_colored_slice(stdout: &mut StandardStream, slice: &str) -> io::Result<()> {
+//     stdout.write(slice.as_bytes())?;
+//     Ok(())
+// }
+
+pub fn print_highlighted_line(
+    stdout: &mut StandardStream,
+    line: &str,
+    search_word: &str,
+    case_sensitive: bool,
+    consider_substrings: bool,
+) -> io::Result<()> {
+    let result =
+        get_highlighted_line(line, search_word, case_sensitive, consider_substrings).unwrap();
+    stdout.write(result.as_bytes())?;
     Ok(())
 }
 
 pub fn print_additional_lines(stdout: &mut StandardStream, line: &str) -> io::Result<()> {
-    print_colored_line(stdout, line, colors::GRAY)
-}
-
-pub fn print_colored_line(stdout: &mut StandardStream, line: &str, color: Color) -> io::Result<()> {
     let mut color_spec = ColorSpec::new();
-    color_spec.set_fg(Some(color));
+    color_spec.set_fg(Some(colors::ADDITIONAL_LINE_FG_COLOR));
     stdout.set_color(&color_spec)?;
-    writeln!(stdout, "{}", line)?;
-    stdout.reset()?;
+    stdout.write(line.as_bytes())?;
+    stdout.write(b"\n")?;
     Ok(())
 }
