@@ -84,6 +84,8 @@ pub fn get_highlighted_line(
         buffer.write(b" ")?;
         color_spec.clear();
     }
+    
+    buffer.write(b"\n")?;
 
     let result = String::from_utf8(buffer.into_inner()).unwrap();
 
