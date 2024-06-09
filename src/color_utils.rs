@@ -92,22 +92,6 @@ pub fn get_highlighted_line(
     Ok(result)
 }
 
-// pub fn get_colored_slice(slice: &str, color: Color) -> io::Result<String> {
-//     let mut buffer = Buffer::ansi();
-//     let mut color_spec = ColorSpec::new();
-//     color_spec.set_bg(Some(color));
-//     buffer.set_color(&color_spec)?;
-//     buffer.write(slice.as_bytes())?;
-//     buffer.reset()?;
-//     let result = String::from_utf8(buffer.into_inner()).unwrap();
-//     Ok(result)
-// }
-
-// pub fn print_colored_slice(stdout: &mut StandardStream, slice: &str) -> io::Result<()> {
-//     stdout.write(slice.as_bytes())?;
-//     Ok(())
-// }
-
 pub fn print_highlighted_line(
     stdout: &mut StandardStream,
     line: &str,

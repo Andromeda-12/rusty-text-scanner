@@ -5,13 +5,6 @@ mod test {
     use termcolor::{Buffer, Color, ColorSpec, WriteColor};
 
     #[test]
-    fn get_colored_slice_with_yellow_bg() {
-        helper_get_colored_slice_with_yellow_bg("test", colors::HIGHLIGHTED_WORD_BG_COLOR);
-        helper_get_colored_slice_with_yellow_bg("тест", Color::Cyan);
-        helper_get_colored_slice_with_yellow_bg("тест123213test", Color::Black);
-    }
-
-    #[test]
     fn get_highlighted_line() {
         helper_get_highlighted_line("test string with some test text", "test");
         helper_get_highlighted_line("test string with some test text", "ne_test");
@@ -48,25 +41,6 @@ mod test {
         helper_get_highlighted_line_with_case_sensitive_substring("тесттест ТЕСТТЕСТ", "тест");
         helper_get_highlighted_line_with_case_sensitive_substring("тесттест ТЕСТТЕСТ", "ТЕСТ");
         helper_get_highlighted_line_with_case_sensitive_substring("тесттест ТЕСТТЕСТ", "");
-    }
-
-    fn helper_get_colored_slice_with_yellow_bg(test_str: &str, color: Color) {
-        let mut color_spec = ColorSpec::new();
-        let mut buffer = Buffer::ansi();
-        color_spec.set_bg(Some(color));
-        buffer.set_color(&color_spec).unwrap();
-        buffer.write(test_str.as_bytes()).unwrap();
-        buffer.reset().unwrap();
-
-        let expected_string = String::from_utf8(buffer.into_inner()).unwrap();
-        let received_string = color_utils::get_colored_slice(test_str, color).unwrap();
-
-        assert!(!received_string.is_empty(), "Received string is empty");
-        assert_eq!(
-            expected_string, received_string,
-            "Expected string: {}, Received string: {}",
-            expected_string, received_string
-        );
     }
 
     fn helper_get_highlighted_line(test_str: &str, search_word: &str) {
