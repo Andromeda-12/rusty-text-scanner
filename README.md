@@ -7,6 +7,8 @@
 To install **Rusty Text Scanner**, use Cargo (Rust's package manager):
 
 ```sh
+git clone https://github.com/Andromeda-12/rusty-text-scanner
+cd rusty-text-scanner
 cargo install --path .
 ```
 
