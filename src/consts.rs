@@ -1,5 +1,5 @@
 pub mod consts {
-    pub const CHUNK_SIZE: usize = 2;
+    pub const CHUNK_SIZE: usize = 1000;
 
     pub mod colors {
         use termcolor::Color;
