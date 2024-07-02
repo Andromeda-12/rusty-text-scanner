@@ -2,6 +2,16 @@
 
 **Rusty Text Scanner** is a command-line tool written in Rust for scanning text files and highlighting occurrences of a search word. It provides flexibility with search modes and case sensitivity options.
 
+## Installation
+
+To install **Rusty Text Scanner**, use Cargo (Rust's package manager):
+
+```sh
+cargo install --path .
+```
+
+This will compile the project and install the rtc binary into your Cargo binaries directory.
+
 ## Usage
 
 ```sh
@@ -16,16 +26,6 @@ rtc <file_path> <search_word> [search_mode] [case_sensitive]
 - `[case_sensitive]`: Optional. Specify case sensitivity:
   - `false` (default): Perform a case-insensitive search.
   - `true`: Perform a case-sensitive search.
-
-## Installation
-
-To install **Rusty Text Scanner**, use Cargo (Rust's package manager):
-
-```sh
-cargo install --path .
-```
-
-This will compile the project and install the rtc binary into your Cargo binaries directory.
 
 ## Examples
 
